@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Airquality-Tracking-Service</string>
+    <string name="loginTitle">Harta Poluare Brasov</string>
+    <string name="email_address">Email address</string>
+    <string name="password">Password</string>
+    <string name="loginButtonText">Login</string>
+    <string name="gpsButton">Start GPS</string>
+    <string name="latitudeTextField">Latitude:</string>
+    <string name="longitudeTextField">Longitude:</string>
+</resources>
