@@ -19,6 +19,10 @@ import androidx.core.content.ContextCompat;
 
 public class TrackingActivity extends Activity {
 
+    public static final String STOPPED_APPLICATION_MESSAGE = "Application is stopped!";
+    public static final String RUNNING_APPLICATION_MESSAGE = "Application is running!";
+    public static final String START_GPS_BUTTON_TEXT = "Start GPS";
+    public static final String STOP_GPS_BUTTON_TEXT = "Stop GPS";
     private TextView applicationStatus;
     private Button gpsButton;
 
@@ -28,39 +32,49 @@ public class TrackingActivity extends Activity {
         setContentView(R.layout.activity_tracking);
         gpsButton = findViewById(R.id.gpsButton);
         applicationStatus = findViewById((R.id.applicationStatus));
-        gpsButton.setBackgroundColor(Color.parseColor("#29a19c"));
+        gpsButton.setBackgroundColor(Color.parseColor(Constants.BUTTONS_BACKGROUND_COLOR));
         gpsButton.setTextColor(Color.WHITE);
         askAccessLocationPermission();
+
         if (!isLocationProviderServiceRunning()) {
-            applicationStatus.setText("Application is stopped!");
-            applicationStatus.setBackgroundColor(Color.parseColor("#435055"));
-            gpsButton.setText("Start GPS");
+            setGPSButtonStart();
         } else {
-            applicationStatus.setText("Application is running!");
-            applicationStatus.setBackgroundColor(Color.GREEN);
-            gpsButton.setText("Stop GPS");
+            setGPSButtonStop();
         }
 
         gpsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!isLocationProviderServiceRunning()) {
+                    //After android 8, we must start our services like a foreground service
+                    //We treated all options to add support for older phones (Android version < 8)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        applicationStatus.setText("Application is running!");
-                        applicationStatus.setBackgroundColor(Color.GREEN);
-                        gpsButton.setText("Stop GPS");
-                        startForegroundService(new Intent(TrackingActivity.this, LocationProviderService.class).putExtra("email", getIntent().getStringExtra("email")));
+                        setGPSButtonStop();
+                        startForegroundService(new Intent(TrackingActivity.this, LocationProviderService.class)
+                                .putExtra(Constants.EMAIL_EXTRA_STRING, getIntent().getStringExtra(Constants.EMAIL_EXTRA_STRING)));
                     } else {
-                        startService(new Intent(TrackingActivity.this, LocationProviderService.class));
+                        setGPSButtonStop();
+                        startService(new Intent(TrackingActivity.this, LocationProviderService.class)
+                                .putExtra(Constants.EMAIL_EXTRA_STRING, getIntent().getStringExtra(Constants.EMAIL_EXTRA_STRING)));
                     }
                 } else {
-                    applicationStatus.setText("Application is stopped!");
-                    applicationStatus.setBackgroundColor(Color.parseColor("#435055"));
-                    gpsButton.setText("Start GPS");
+                    setGPSButtonStart();
                     stopService(new Intent(TrackingActivity.this, LocationProviderService.class));
                 }
             }
         });
+    }
+
+    private void setGPSButtonStart() {
+        applicationStatus.setText(STOPPED_APPLICATION_MESSAGE);
+        applicationStatus.setBackgroundColor(Color.parseColor("#435055"));
+        gpsButton.setText(START_GPS_BUTTON_TEXT);
+    }
+
+    private void setGPSButtonStop() {
+        applicationStatus.setText(RUNNING_APPLICATION_MESSAGE);
+        applicationStatus.setBackgroundColor(Color.GREEN);
+        gpsButton.setText(STOP_GPS_BUTTON_TEXT);
     }
 
     private void askAccessLocationPermission() {
@@ -71,7 +85,7 @@ public class TrackingActivity extends Activity {
         //fine location and access background location
         if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION},
                     99);
         }
     }

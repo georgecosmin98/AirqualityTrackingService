@@ -44,7 +44,7 @@ public class LoginActivity extends Activity {
         email = findViewById(R.id.textFieldEmail);
         password = findViewById(R.id.textFieldPassword);
         loginButton = findViewById(R.id.loginButton);
-        loginButton.setBackgroundColor(Color.parseColor("#29a19c"));
+        loginButton.setBackgroundColor(Color.parseColor(Constants.BUTTONS_BACKGROUND_COLOR));
         JSONObject jsonBody = new JSONObject();
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,17 +66,18 @@ public class LoginActivity extends Activity {
                             if (Integer.parseInt(response) == 200) {
                                 //Is an abstract description of an operations to be performed, in our case, we use it for
                                 //startActivity method to switch between activity (application page)
-                                Intent intentAdmin = new Intent(LoginActivity.this, TrackingActivity.class).putExtra("email",email.getText().toString());
+                                Intent intentAdmin = new Intent(LoginActivity.this, TrackingActivity.class)
+                                        .putExtra(Constants.EMAIL_EXTRA_STRING, email.getText().toString());
                                 startActivity(intentAdmin);
                             } else {
-                                Toast.makeText(getApplicationContext(),"Invalid username or password",Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), "Invalid username or password", Toast.LENGTH_SHORT).show();
                             }
                         }
                     }, new Response.ErrorListener() {
                         @Override
                         //onErrorResponse is called when something wrong occured (post request was failed)
                         public void onErrorResponse(VolleyError error) {
-                            Toast.makeText(getApplicationContext(),"Something wrong occured! Please try again!",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), Constants.ERROR_TOAST_MESSAGE, Toast.LENGTH_SHORT).show();
                         }
                     }) {
                         @Override

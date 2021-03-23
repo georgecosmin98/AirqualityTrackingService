@@ -41,27 +41,31 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 
 public class LocationProviderService extends Service implements LocationListener {
+
+    public static final String NOTIFICATION_CHANNEL_ID = "HartaBV";
+
     protected LocationManager locationManager;
     private String email;
+
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     @Override
     //The system invokes this method by calling startService method
     public int onStartCommand(Intent intent, int flags, int startId) {
-        email = intent.getStringExtra("email");
+        email = intent.getStringExtra(Constants.EMAIL_EXTRA_STRING);
         Intent newIntent = new Intent(this, TrackingActivity.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             //After Android 8.0 (API level 26, or VERSION-CODE O), all notification
             //must be assigned to a channel, so that users can more easily manage
             //these notifications
             NotificationChannel notificationChannel = new NotificationChannel(
-                    "HartaBV", "Location Provider Service Notification", NotificationManager.IMPORTANCE_DEFAULT);
+                    NOTIFICATION_CHANNEL_ID, "Location Provider Service Notification", NotificationManager.IMPORTANCE_DEFAULT);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(notificationChannel);
         }
 
         //PendingIntent is used for redirect user to TrackingActivity when press Airquality-Tracking-Service notification
         PendingIntent pendingIntent = PendingIntent.getActivities(this, 0, new Intent[]{newIntent}, 0);
-        Notification notification = new NotificationCompat.Builder(this, "HartaBV")
+        Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setContentTitle("Airquality-Tracking-Service")
                 .setContentText("Tracking application is running")
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -107,16 +111,14 @@ public class LocationProviderService extends Service implements LocationListener
             //Instantiate the RequestQueue
             RequestQueue requestQueue = Volley.newRequestQueue(LocationProviderService.this);
             //Post authentication request to provided url
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, Constants.USER_LOCATIONS_URL, new Response.Listener<String>() {
-
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, Constants.USERS_LOCATIONS_URL, new Response.Listener<String>() {
                 @Override
                 //onResponse is called when post request was succesfully
                 public void onResponse(String response) {
-                    //Verify if user send valid credentials
+                    //Verify if post request was successfully sent
                     if (Integer.parseInt(response) == 200) {
-
                     } else {
-                        System.out.println("error");
+                        Toast.makeText(getApplicationContext(), Constants.ERROR_TOAST_MESSAGE, Toast.LENGTH_SHORT).show();
                     }
                 }
             }, new Response.ErrorListener() {
@@ -124,6 +126,7 @@ public class LocationProviderService extends Service implements LocationListener
                 //onErrorResponse is called when something wrong occured (post request was failed)
                 public void onErrorResponse(VolleyError error) {
                     System.out.println(error);
+                    Toast.makeText(getApplicationContext(), Constants.ERROR_TOAST_MESSAGE, Toast.LENGTH_SHORT).show();
                 }
             }) {
                 @Override
@@ -147,15 +150,17 @@ public class LocationProviderService extends Service implements LocationListener
                 }
 
                 @Override
-                //Parse network response, and return status code
+                //Parse network response, and return status code (we dont need JWT Token, so we return just status code)
                 protected Response<String> parseNetworkResponse(NetworkResponse networkResponse) {
-                    String responseString = "";
+                    String statusCode = "";
                     if (networkResponse != null) {
-                        responseString = String.valueOf(networkResponse.statusCode);
+                        statusCode = String.valueOf(networkResponse.statusCode);
                     }
-                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(networkResponse));
+                    //Return just status code, without header
+                    return Response.success(statusCode, null);
                 }
             };
+            //Add string request to queue
             requestQueue.add(stringRequest);
         } catch (JSONException ex) {
             ex.printStackTrace();
