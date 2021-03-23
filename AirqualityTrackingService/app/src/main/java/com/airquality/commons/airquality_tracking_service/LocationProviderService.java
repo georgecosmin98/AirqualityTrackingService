@@ -45,22 +45,29 @@ public class LocationProviderService extends Service implements LocationListener
     private String email;
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     @Override
+    //The system invokes this method by calling startService method
     public int onStartCommand(Intent intent, int flags, int startId) {
         email = intent.getStringExtra("email");
         Intent newIntent = new Intent(this, TrackingActivity.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            //After Android 8.0 (API level 26, or VERSION-CODE O), all notification
+            //must be assigned to a channel, so that users can more easily manage
+            //these notifications
             NotificationChannel notificationChannel = new NotificationChannel(
-                    "ChannelId", "Foreground Service Notification", NotificationManager.IMPORTANCE_DEFAULT);
+                    "HartaBV", "Location Provider Service Notification", NotificationManager.IMPORTANCE_DEFAULT);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(notificationChannel);
         }
 
+        //PendingIntent is used for redirect user to TrackingActivity when press Airquality-Tracking-Service notification
         PendingIntent pendingIntent = PendingIntent.getActivities(this, 0, new Intent[]{newIntent}, 0);
-        Notification notification = new NotificationCompat.Builder(this, "ChannelId")
+        Notification notification = new NotificationCompat.Builder(this, "HartaBV")
                 .setContentTitle("Airquality-Tracking-Service")
                 .setContentText("Tracking application is running")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(pendingIntent).build();
+
+        //Start LocationProviderService and make a sticky notification
         startForeground(1, notification);
 
         return START_REDELIVER_INTENT;
@@ -73,14 +80,17 @@ public class LocationProviderService extends Service implements LocationListener
     }
 
     @Override
+    //This method is called when service is initially created
     public void onCreate() {
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        //Verify if application have permission to access fine location
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, this);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 0, this);
     }
 
     @Override
+    //This method is called when the service is no longer used and is being destroyed
     public void onDestroy() {
         stopForeground(true);
     }
@@ -88,7 +98,6 @@ public class LocationProviderService extends Service implements LocationListener
     @Override
     public void onLocationChanged(@NonNull Location location) {
         JSONObject jsonBody = new JSONObject();
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 4500, 0, this);
         try {
             jsonBody.put("username", email);
             jsonBody.put("latitude", String.valueOf(location.getLatitude()));
@@ -98,7 +107,7 @@ public class LocationProviderService extends Service implements LocationListener
             //Instantiate the RequestQueue
             RequestQueue requestQueue = Volley.newRequestQueue(LocationProviderService.this);
             //Post authentication request to provided url
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, "", new Response.Listener<String>() {
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, Constants.USER_LOCATIONS_URL, new Response.Listener<String>() {
 
                 @Override
                 //onResponse is called when post request was succesfully

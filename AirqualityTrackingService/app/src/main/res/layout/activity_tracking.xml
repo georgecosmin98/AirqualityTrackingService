@@ -3,46 +3,35 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:textColor="#FFFFFF"
+    tools:context=".TrackingActivity">
 
     <Button
         android:id="@+id/gpsButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="341dp"
+        android:layout_width="140dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="360dp"
+        android:background="#ADEFD1"
         android:text="@string/gpsButton"
+        android:textColor="@color/black"
+        app:backgroundTint="#ADEFD1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/longitudeTextField" />
+        app:layout_constraintTop_toBottomOf="@+id/applicationStatus" />
 
     <TextView
-        android:id="@+id/latitudeTextField"
-        android:layout_width="160dp"
-        android:layout_height="45dp"
-        android:layout_marginTop="110dp"
-        android:layout_marginBottom="27dp"
-        android:text="@string/latitudeTextField"
-        android:textColor="#000000"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/longitudeTextField"
-        app:layout_constraintEnd_toEndOf="@+id/longitudeTextField"
-        app:layout_constraintStart_toStartOf="@+id/longitudeTextField"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/longitudeTextField"
-        android:layout_width="160dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="103dp"
-        android:layout_marginLeft="103dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="100dp"
-        android:text="@string/longitudeTextField"
-        android:textColor="#000000"
-        android:textSize="18sp"
+        android:id="@+id/applicationStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="181dp"
+        android:layout_marginBottom="152dp"
+        android:text="Application is running"
+        android:textSize="24dp"
         app:layout_constraintBottom_toTopOf="@+id/gpsButton"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/latitudeTextField" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,12 +2,16 @@ package com.airquality.commons.airquality_tracking_service;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -31,6 +35,7 @@ public class LoginActivity extends Activity {
     private EditText email, password;
     private Button loginButton;
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,14 +44,12 @@ public class LoginActivity extends Activity {
         email = findViewById(R.id.textFieldEmail);
         password = findViewById(R.id.textFieldPassword);
         loginButton = findViewById(R.id.loginButton);
+        loginButton.setBackgroundColor(Color.parseColor("#29a19c"));
         JSONObject jsonBody = new JSONObject();
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Close virtual keyboard after press Login button
-                InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
-                inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
-                //Try to send authentication request to tomcat backend server
+                //Try to make a json body used to send data from Android to Tomcat Server
                 try {
                     jsonBody.put("username", email.getText().toString());
                     jsonBody.put("password", password.getText().toString());
@@ -54,7 +57,7 @@ public class LoginActivity extends Activity {
                     //Instantiate the RequestQueue
                     RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
                     //Post authentication request to provided url
-                    StringRequest stringRequest = new StringRequest(Request.Method.POST, "", new Response.Listener<String>() {
+                    StringRequest stringRequest = new StringRequest(Request.Method.POST, Constants.USERS_AUTHENTICATE_URL, new Response.Listener<String>() {
 
                         @Override
                         //onResponse is called when post request was succesfully
@@ -66,7 +69,6 @@ public class LoginActivity extends Activity {
                                 Intent intentAdmin = new Intent(LoginActivity.this, TrackingActivity.class).putExtra("email",email.getText().toString());
                                 startActivity(intentAdmin);
                             } else {
-                                System.out.println("error");
                                 Toast.makeText(getApplicationContext(),"Invalid username or password",Toast.LENGTH_SHORT).show();
                             }
                         }
@@ -74,7 +76,7 @@ public class LoginActivity extends Activity {
                         @Override
                         //onErrorResponse is called when something wrong occured (post request was failed)
                         public void onErrorResponse(VolleyError error) {
-                            System.out.println(error);
+                            Toast.makeText(getApplicationContext(),"Something wrong occured! Please try again!",Toast.LENGTH_SHORT).show();
                         }
                     }) {
                         @Override
